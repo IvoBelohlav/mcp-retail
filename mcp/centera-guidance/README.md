@@ -7,7 +7,7 @@ Read-only MCP server that exposes Centera project guardrails, key docs/specs, an
 ### Run locally (dev)
 
 ```bash
-cd tools/mcp/centera-guidance
+cd mcp/centera-guidance
 npm install
 npm run build
 node dist/src/cli.js --repoRoot /absolute/path/to/centera

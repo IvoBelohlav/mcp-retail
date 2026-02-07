@@ -29,8 +29,8 @@ Environment variables:
 
 ## Deploy To Vercel (Monorepo)
 
-1. Create a new Vercel Project and import the Git repository that contains Centera.
-2. In Vercel project settings, set **Root Directory** to `tools/mcp/centera-guidance-remote`.
+1. Create a new Vercel Project and import this GitHub repository.
+2. In Vercel project settings, set **Root Directory** to `mcp/centera-guidance-remote`.
 3. Set Environment Variables (Project -> Settings -> Environment Variables):
    - `MCP_AUTH_TOKEN` (required): a long random string
    - `GITHUB_OWNER` (required): GitHub org/user (example: `Cogneracz`)
@@ -42,7 +42,7 @@ Environment variables:
 ## Local Development
 
 ```bash
-cd tools/mcp/centera-guidance-remote
+cd mcp/centera-guidance-remote
 npm install
 export MCP_AUTH_TOKEN="change-me"
 export GITHUB_OWNER="your-org"
