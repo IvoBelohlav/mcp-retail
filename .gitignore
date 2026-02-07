@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+.next/
+out/
+
+# Coverage / test output
+coverage/
+
+# Logs
+*.log
+
+# Env files
+.env
+.env.*
+
+# Vercel
+.vercel/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Packaging
+*.tgz
+
