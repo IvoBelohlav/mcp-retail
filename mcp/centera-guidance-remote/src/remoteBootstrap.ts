@@ -18,6 +18,10 @@ export type BootstrapBundle = {
   };
   effectiveInstructions: EffectiveInstructions;
   architecture: RemoteArchitectureSnapshot;
+  frontendPlaybook: {
+    checklist: string[];
+    patterns: Array<{ name: string; repoPath: string; uri: string }>;
+  };
   openapiPlaybook: {
     contractPath: string;
     generatedCodePaths: string[];
@@ -90,10 +94,35 @@ export async function buildBootstrapBundle(
     input: { path, goal: input.goal, ref, includeReadme, mode },
     effectiveInstructions,
     architecture,
+    frontendPlaybook: buildFrontendPlaybook(),
     openapiPlaybook: buildOpenApiPlaybook(),
     repoPointers: buildRepoPointers(),
     externalMcpPlaybook: buildExternalMcpPlaybook(),
     suggestedNextCalls: buildSuggestedNextCalls(input.goal),
+  };
+}
+
+function buildFrontendPlaybook(): BootstrapBundle['frontendPlaybook'] {
+  const patterns = [
+    { name: 'DetailLayout (tabs)', repoPath: 'frontend/src/layouts/DetailLayout.tsx', uri: 'centera://docs/frontend/detail-layout' },
+    { name: 'SaveActions (sticky save)', repoPath: 'frontend/src/shared/components/SaveActions/SaveActions.tsx', uri: 'centera://docs/frontend/save-actions' },
+    { name: 'ErrorAlert (translated)', repoPath: 'frontend/src/shared/components/ErrorAlert/ErrorAlert.tsx', uri: 'centera://docs/frontend/error-alert' },
+    { name: 'LoadingButton', repoPath: 'frontend/src/shared/components/LoadingButton/LoadingButton.tsx', uri: 'centera://docs/frontend/loading-button' },
+    { name: 'uiTokens', repoPath: 'frontend/src/shared/constants/uiTokens.ts', uri: 'centera://docs/frontend/ui-tokens' },
+    { name: 'Theme constants', repoPath: 'frontend/src/theme/constants.ts', uri: 'centera://docs/frontend/theme-constants' },
+    { name: 'i18n config', repoPath: 'frontend/src/i18n/index.ts', uri: 'centera://docs/frontend/i18n' },
+  ];
+
+  return {
+    checklist: [
+      'Prefer existing layouts/components instead of inventing new patterns (tabs, forms, dialogs).',
+      'Use DetailLayout + MUI Tabs for detail pages with sections.',
+      'Wrap long edit forms in SaveActions so Save/Cancel stays discoverable (sticky top/bottom).',
+      'Do not hardcode user-facing strings; add i18n keys in frontend/src/i18n/locales/{cs,en}/ and call t(key).',
+      'Use shared ErrorAlert for error surfaces; use notistack for transient success/warn/info messages.',
+      'Use theme tokens/uiTokens for spacing and consistency; avoid ad-hoc colors and spacing values.',
+    ],
+    patterns,
   };
 }
 
@@ -210,4 +239,3 @@ function clampInt(value: number, min: number, max: number): number {
   const n = Number.isFinite(value) ? Math.trunc(value) : min;
   return Math.max(min, Math.min(max, n));
 }
-
