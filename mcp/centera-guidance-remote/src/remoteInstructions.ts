@@ -344,10 +344,22 @@ function extractRuleLines(markdown: string, maxLines: number): string[] {
 }
 
 function compareInstructionFiles(a: InstructionFile, b: InstructionFile): number {
-  // Shallow directories first; within same directory, stable basename order.
+  // Shallow directories first; within same directory, apply precedence:
+  // README < AGENTS < CLAUDE (because files are applied top-to-bottom and later wins).
   const d = compareDirsByDepthThenName(a.directory, b.directory);
   if (d !== 0) return d;
+
+  const k = instructionKindOrder(a.kind) - instructionKindOrder(b.kind);
+  if (k !== 0) return k;
+
   return a.repoPath.localeCompare(b.repoPath);
+}
+
+function instructionKindOrder(kind: InstructionFileKind): number {
+  // Lower number => applied earlier (lower precedence).
+  if (kind === 'readme') return 0;
+  if (kind === 'agents') return 1;
+  return 2; // 'claude'
 }
 
 function compareDirsByDepthThenName(a: string, b: string): number {

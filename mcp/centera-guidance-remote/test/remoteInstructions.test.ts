@@ -94,3 +94,28 @@ test('computeEffectiveInstructions: survives unreadable instruction file (error)
   assert.ok(effective.mergedMarkdown?.includes('Unable to read frontend/AGENTS.md'));
 });
 
+test('computeEffectiveInstructions: CLAUDE > AGENTS > README precedence within the same directory (expected)', async () => {
+  const treeEntries = [
+    { path: 'README.md', type: 'file' as const },
+    { path: 'AGENTS.md', type: 'file' as const },
+    { path: 'CLAUDE.md', type: 'file' as const },
+    { path: 'frontend/README.md', type: 'file' as const },
+    { path: 'frontend/AGENTS.md', type: 'file' as const },
+    { path: 'frontend/src/app.tsx', type: 'file' as const },
+  ];
+
+  const discovery = discoverInstructionFiles(treeEntries, { includeReadme: true, truncated: false });
+
+  const effective = await computeEffectiveInstructions({
+    targetPath: 'frontend/src/app.tsx',
+    treeEntries,
+    discovery,
+    mode: 'both',
+    readFile: async () => ({ text: '- rule\n', truncated: false }),
+  });
+
+  assert.deepEqual(
+    effective.filesUsed.map((f) => f.repoPath),
+    ['README.md', 'AGENTS.md', 'CLAUDE.md', 'frontend/README.md', 'frontend/AGENTS.md'],
+  );
+});
