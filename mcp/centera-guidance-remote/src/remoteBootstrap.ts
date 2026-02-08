@@ -126,7 +126,7 @@ export async function buildBootstrapBundle(
 }
 
 function buildFrontendPlaybook(): BootstrapBundle['frontendPlaybook'] {
-  const patterns = [
+  const patterns: TrustTaggedPattern[] = [
     {
       name: 'API client',
       repoPath: 'frontend/src/api/client.ts',
