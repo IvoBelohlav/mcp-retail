@@ -17,9 +17,17 @@ Tools (both local + remote):
 - `centera_guardrails_check`: advisory warnings for risky paths (generated code, i18n, OpenAPI-first, etc.)
 - `centera_describe_architecture`: JSON snapshot (frontend features, backend modules, OpenAPI path, OpenSpec specs)
 
+Remote-only (navigation helpers):
+
+- `centera_list_instruction_files`: list instruction files (`AGENTS.md`, `CLAUDE.md`, optionally `README.md`)
+- `centera_get_instruction_tree`: parent/child relationships between instruction-bearing directories
+- `centera_get_effective_instructions`: compute effective instructions for a target path (root -> deepest), returning merged markdown and/or summary
+- `centera_bootstrap`: one-call context bundle (instructions + architecture + playbooks + suggested next calls)
+
 Resources (remote also exposes these via GitHub):
 
 - `centera://docs/agents`, `centera://docs/claude`, `centera://docs/openspec/agents`, `centera://docs/openapi`, etc.
+- UI/navigation helpers: `centera://docs/frontend/detail-layout`, `centera://docs/frontend/save-actions`, etc.
 
 Prompts:
 
@@ -59,4 +67,3 @@ node -e "import { Client } from '@modelcontextprotocol/sdk/client/index.js'; imp
 export CENTERA_MCP_TOKEN="your MCP_AUTH_TOKEN"
 codex mcp add centera-guidance-remote --bearer-token-env-var CENTERA_MCP_TOKEN --url https://<deployment>/api/mcp
 ```
-

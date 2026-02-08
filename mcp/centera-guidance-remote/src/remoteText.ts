@@ -13,6 +13,10 @@ export function readmeResourceText(github: RemoteGitHubConfig): string {
     '- centera_search',
     '- centera_guardrails_check',
     '- centera_describe_architecture',
+    '- centera_list_instruction_files',
+    '- centera_get_instruction_tree',
+    '- centera_get_effective_instructions',
+    '- centera_bootstrap',
     '',
     'Resources:',
     '- centera://docs/agents',
@@ -20,5 +24,12 @@ export function readmeResourceText(github: RemoteGitHubConfig): string {
     '- centera://docs/openspec/agents',
     '- centera://docs/openspec/project',
     '- centera://docs/openapi',
+    '- centera://docs/frontend/detail-layout',
+    '- centera://docs/frontend/save-actions',
+    '- centera://docs/frontend/error-alert',
+    '- centera://docs/frontend/loading-button',
+    '- centera://docs/frontend/ui-tokens',
+    '- centera://docs/frontend/theme-constants',
+    '- centera://docs/frontend/i18n',
   ].join('\n');
 }

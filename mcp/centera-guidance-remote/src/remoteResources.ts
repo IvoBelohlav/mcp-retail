@@ -50,6 +50,49 @@ const resources: StaticResource[] = [
     mimeType: 'application/yaml',
     maxBytes: 600_000,
   },
+  // Frontend UI patterns and common building blocks (context/navigation helpers)
+  {
+    id: 'frontend-detail-layout',
+    uri: 'centera://docs/frontend/detail-layout',
+    repoPath: 'frontend/src/layouts/DetailLayout.tsx',
+    mimeType: 'text/plain',
+  },
+  {
+    id: 'frontend-save-actions',
+    uri: 'centera://docs/frontend/save-actions',
+    repoPath: 'frontend/src/shared/components/SaveActions/SaveActions.tsx',
+    mimeType: 'text/plain',
+  },
+  {
+    id: 'frontend-error-alert',
+    uri: 'centera://docs/frontend/error-alert',
+    repoPath: 'frontend/src/shared/components/ErrorAlert/ErrorAlert.tsx',
+    mimeType: 'text/plain',
+  },
+  {
+    id: 'frontend-loading-button',
+    uri: 'centera://docs/frontend/loading-button',
+    repoPath: 'frontend/src/shared/components/LoadingButton/LoadingButton.tsx',
+    mimeType: 'text/plain',
+  },
+  {
+    id: 'frontend-ui-tokens',
+    uri: 'centera://docs/frontend/ui-tokens',
+    repoPath: 'frontend/src/shared/constants/uiTokens.ts',
+    mimeType: 'text/plain',
+  },
+  {
+    id: 'frontend-theme-constants',
+    uri: 'centera://docs/frontend/theme-constants',
+    repoPath: 'frontend/src/theme/constants.ts',
+    mimeType: 'text/plain',
+  },
+  {
+    id: 'frontend-i18n',
+    uri: 'centera://docs/frontend/i18n',
+    repoPath: 'frontend/src/i18n/index.ts',
+    mimeType: 'text/plain',
+  },
 ];
 
 export function registerResources(server: any, config: RemoteConfig): void {

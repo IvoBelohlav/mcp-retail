@@ -63,3 +63,12 @@ codex mcp add centera-guidance-remote --bearer-token-env-var CENTERA_MCP_TOKEN -
 
 - Streamable HTTP is the recommended transport for remote MCP servers.
 - The server is read-only and limited to GitHub content.
+
+## High-Value Navigation Tools
+
+These tools are designed to keep the assistant aligned with Centera conventions by resolving which instruction files apply to a given path:
+
+- `centera_list_instruction_files` (optional `includeReadme`) lists instruction files across the repo.
+- `centera_get_instruction_tree` returns parent/child relationships between instruction-bearing directories.
+- `centera_get_effective_instructions` returns the ordered instruction files (root -> deepest) and a merged view (and/or summary) for a given repo path.
+- `centera_bootstrap` returns a one-call context bundle (effective instructions + architecture + playbooks + suggested next calls).

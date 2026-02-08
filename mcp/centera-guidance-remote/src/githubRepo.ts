@@ -27,6 +27,20 @@ export type RepoSearchResult = {
   note?: string;
 };
 
+export type RepoTreeEntry = {
+  path: string;
+  type: 'file' | 'dir' | 'other';
+  size?: number;
+};
+
+export type RepoTreeResult = {
+  engine: 'github';
+  ref: string;
+  truncated: boolean;
+  entries: RepoTreeEntry[];
+  note?: string;
+};
+
 export type GitHubFetch = (input: string, init?: RequestInit) => Promise<Response>;
 
 export function createGitHubRepoClient(config: RemoteGitHubConfig, fetchImpl: GitHubFetch = fetch) {
@@ -144,7 +158,43 @@ export function createGitHubRepoClient(config: RemoteGitHubConfig, fetchImpl: Gi
     return res.ok;
   };
 
-  return { listDir, readFile, searchCode, exists };
+  const listTree = async (ref?: string): Promise<RepoTreeResult> => {
+    const resolvedRef = (ref ?? config.ref).trim() || config.ref;
+    const qp = new URLSearchParams();
+    qp.set('recursive', '1');
+
+    const url = `${config.apiBaseUrl}/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(
+      config.repo,
+    )}/git/trees/${encodeURIComponent(resolvedRef)}?${qp.toString()}`;
+
+    const json = await getJson<any>(url);
+    const tree: any[] = Array.isArray(json?.tree) ? json.tree : [];
+    const truncated = Boolean(json?.truncated);
+
+    const entries: RepoTreeEntry[] = tree
+      .map((item: any): RepoTreeEntry | null => {
+        const itemPath = typeof item?.path === 'string' ? item.path : null;
+        const type = typeof item?.type === 'string' ? item.type : null;
+        const size = typeof item?.size === 'number' ? item.size : undefined;
+        if (!itemPath || !type) return null;
+        return {
+          path: itemPath,
+          type: type === 'blob' ? 'file' : type === 'tree' ? 'dir' : 'other',
+          size,
+        };
+      })
+      .filter((x): x is RepoTreeEntry => x != null);
+
+    return {
+      engine: 'github',
+      ref: resolvedRef,
+      truncated,
+      entries,
+      note: truncated ? 'GitHub tree listing was truncated. Results may be incomplete.' : undefined,
+    };
+  };
+
+  return { listDir, readFile, searchCode, exists, listTree };
 }
 
 async function readGitHubFileText(
