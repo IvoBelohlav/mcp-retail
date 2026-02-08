@@ -70,7 +70,7 @@ export async function buildBootstrapBundle(
   const path = (input.path ?? '.').trim() || '.';
   const ref = (input.ref ?? config.github.ref).trim() || config.github.ref;
   const includeReadme = Boolean(input.includeReadme);
-  const mode: EffectiveInstructionsMode = input.mode ?? 'summary';
+  const mode: EffectiveInstructionsMode = input.mode ?? 'both';
   const maxBytesPerFile = clampInt(input.maxBytesPerFile ?? 100_000, 1_000, 2_000_000);
 
   const tree = await deps.repo.listTree(ref);

@@ -268,9 +268,9 @@ export function registerCenteraGuidance(server: any, config: RemoteConfig): void
         mode: z
           .enum(['summary', 'full', 'both'])
           .optional()
-          .describe('Instruction output size mode (default: summary)'),
+          .describe('Instruction output size mode (default: both)'),
         maxBytesPerFile: z.number().int().optional().describe('Max bytes read per instruction file (default: 100000)'),
-        maxSummaryLines: z.number().int().optional().describe('Max summary bullet lines (default: 40)'),
+        maxSummaryLines: z.number().int().optional().describe('Max summary bullet lines (default: 120)'),
       },
     },
     async ({
@@ -301,7 +301,7 @@ export function registerCenteraGuidance(server: any, config: RemoteConfig): void
           goal,
           ref,
           includeReadme,
-          mode: mode ?? 'summary',
+          mode: mode ?? 'both',
           maxBytesPerFile,
           maxSummaryLines,
         },

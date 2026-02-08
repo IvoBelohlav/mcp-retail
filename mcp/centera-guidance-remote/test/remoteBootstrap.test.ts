@@ -43,7 +43,7 @@ test('buildBootstrapBundle: returns effective instructions + architecture (expec
     { path: 'frontend/src/features/contract/components/X.tsx' },
   );
 
-  assert.equal(bundle.input.mode, 'summary');
+  assert.equal(bundle.input.mode, 'both');
   assert.equal(bundle.effectiveInstructions.target.kind, 'file');
   assert.deepEqual(bundle.architecture, arch);
   assert.equal(bundle.openapiPlaybook.contractPath, 'backend/openapi/openapi.yaml');
@@ -117,4 +117,3 @@ test('buildBootstrapBundle: instruction read failure does not hard-fail (error)'
   assert.equal(bundle.effectiveInstructions.truncated, true);
   assert.ok(bundle.effectiveInstructions.mergedMarkdown?.includes('Unable to read frontend/AGENTS.md'));
 });
-

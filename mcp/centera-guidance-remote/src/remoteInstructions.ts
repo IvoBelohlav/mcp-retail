@@ -43,7 +43,8 @@ export type EffectiveInstructions = {
   note?: string;
 };
 
-const DEFAULT_SUMMARY_LINES = 40;
+// Default should be detailed enough to avoid constant follow-up calls.
+const DEFAULT_SUMMARY_LINES = 120;
 
 export function discoverInstructionFiles(
   treeEntries: RepoTreeEntry[],
@@ -383,4 +384,3 @@ function toErrorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
   return String(err);
 }
-
