@@ -3,6 +3,34 @@ import assert from 'node:assert/strict';
 
 import { buildBootstrapBundle } from '../src/remoteBootstrap.ts';
 
+function emptyDatabaseSnapshot() {
+  return {
+    infraPath: 'backend/db',
+    infraEntries: [],
+    dockerCompose: {
+      path: 'backend/db/docker-compose.yml',
+      exists: false,
+      services: [],
+      volumes: [],
+      networks: [],
+    },
+    envExample: { path: 'backend/db/.env.example', exists: false, variables: {}, redactedKeys: [] },
+    defaults: { host: 'localhost' },
+    initScripts: { path: 'backend/db/init', exists: false, files: [], count: 0 },
+    pgadmin: { path: 'backend/db/pgadmin', exists: false, entries: [] },
+    flyway: {
+      migrationsPath: 'backend/src/main/resources/db/migration',
+      exists: false,
+      namingPattern: 'V<version>__<description>.sql',
+      migrationFiles: [],
+      count: 0,
+      truncated: false,
+      sampleNote: '',
+    },
+    conventions: { schemas: ['centera', 'audit'], initScriptPattern: 'NN-<name>.sql' },
+  };
+}
+
 test('buildBootstrapBundle: returns effective instructions + architecture (expected)', async () => {
   const treeEntries = [
     { path: 'AGENTS.md', type: 'file' as const },
@@ -28,6 +56,7 @@ test('buildBootstrapBundle: returns effective instructions + architecture (expec
     repo: { owner: 'o', repo: 'r', ref: 'main' },
     overview: { layout: 'x', apiContractPath: 'backend/openapi/openapi.yaml', principles: [], guidanceResources: [] },
     openapi: { path: 'backend/openapi/openapi.yaml', exists: true },
+    database: emptyDatabaseSnapshot(),
     frontend: { features: ['contract'] },
     backend: { modules: ['energy'] },
     openspec: { specs: ['something'] },
@@ -70,6 +99,7 @@ test('buildBootstrapBundle: unknown path still returns a bundle with a note (edg
         repo: { owner: 'o', repo: 'r', ref: 'main' },
         overview: { layout: 'x', apiContractPath: 'backend/openapi/openapi.yaml', principles: [], guidanceResources: [] },
         openapi: { path: 'backend/openapi/openapi.yaml', exists: false },
+        database: emptyDatabaseSnapshot(),
         frontend: { features: [] },
         backend: { modules: [] },
         openspec: { specs: [] },
@@ -104,6 +134,7 @@ test('buildBootstrapBundle: instruction read failure does not hard-fail (error)'
         repo: { owner: 'o', repo: 'r', ref: 'main' },
         overview: { layout: 'x', apiContractPath: 'backend/openapi/openapi.yaml', principles: [], guidanceResources: [] },
         openapi: { path: 'backend/openapi/openapi.yaml', exists: true },
+        database: emptyDatabaseSnapshot(),
         frontend: { features: [] },
         backend: { modules: [] },
         openspec: { specs: [] },

@@ -296,6 +296,15 @@ function buildRepoPointers(): BootstrapBundle['repoPointers'] {
     repoDocResources: [
       { uri: 'centera://docs/repo/readme', repoPath: 'README.md', trust: 'reference' },
       { uri: 'centera://docs/codex/instructions', repoPath: '.codex/instructions.md', trust: 'reference' },
+      { uri: 'centera://docs/frontend/readme', repoPath: 'frontend/README.md', trust: 'reference' },
+      { uri: 'centera://docs/backend/readme', repoPath: 'backend/README.md', trust: 'reference' },
+      { uri: 'centera://docs/docs/account-mapping-status', repoPath: 'docs/account-mapping-status.md', trust: 'reference' },
+      { uri: 'centera://docs/docs/api/billing-endpoints', repoPath: 'docs/api/billing-endpoints.md', trust: 'reference' },
+      {
+        uri: 'centera://docs/docs/design/document-template-management',
+        repoPath: 'docs/design/document-template-management.md',
+        trust: 'reference',
+      },
     ],
     openapiResources: [{ uri: 'centera://docs/openapi', repoPath: 'backend/openapi/openapi.yaml', trust: 'reference' }],
     databaseResources: [

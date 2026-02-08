@@ -25,6 +25,11 @@ export function readmeResourceText(github: RemoteGitHubConfig): string {
     '- centera://docs/openspec/project',
     '- centera://docs/repo/readme',
     '- centera://docs/codex/instructions',
+    '- centera://docs/frontend/readme',
+    '- centera://docs/backend/readme',
+    '- centera://docs/docs/account-mapping-status',
+    '- centera://docs/docs/api/billing-endpoints',
+    '- centera://docs/docs/design/document-template-management',
     '- centera://docs/ai/trust-policy',
     '- centera://docs/openapi',
     '- centera://docs/backend/db/agents',
@@ -48,5 +53,9 @@ export function readmeResourceText(github: RemoteGitHubConfig): string {
     '- centera://docs/frontend/shared/action-button',
     '- centera://docs/backend/rest-exception-handler',
     '- centera://docs/backend/api-delegate-impl-example',
+    '',
+    'Resource templates:',
+    '- centera://repo/file{/path*}',
+    '- centera://repo/dir{/path*}',
   ].join('\n');
 }

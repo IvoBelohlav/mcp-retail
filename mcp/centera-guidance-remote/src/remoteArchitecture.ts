@@ -34,6 +34,8 @@ export type RemoteDatabaseSnapshot = {
     namingPattern: string;
     migrationFiles: string[];
     count: number;
+    truncated: boolean;
+    sampleNote: string;
   };
   conventions: { schemas: string[]; initScriptPattern: string };
 };
@@ -128,7 +130,7 @@ async function collectDatabaseSnapshot(
 
   const infraEntries = await safeListDirEntries(client, infraPath, warnings);
 
-  const envExampleRes = await safeReadFileText(client, envExamplePath, warnings);
+  const envExampleRes = await safeReadFileText(client, envExamplePath, warnings, { allowMissing: true });
   const parsedEnv = envExampleRes.exists ? parseDotEnvKeyValues(envExampleRes.text) : {};
   const { variables: envVariables, redactedKeys } = redactEnvKeys(parsedEnv, [
     'POSTGRES_PASSWORD',
@@ -143,11 +145,12 @@ async function collectDatabaseSnapshot(
 
   const pgadminEntries = await safeListDirEntries(client, pgadminPath, warnings, { allowMissing: true });
 
-  const migrationEntries = await safeListDirEntries(client, migrationsPath, warnings, { allowMissing: true });
+  const migrationEntries = await safeListDirEntries(client, migrationsPath, warnings);
   const migrationFiles = migrationEntries
     .filter((e) => e.type === 'file')
     .map((e) => e.name)
     .sort(compareFlywayFileNames);
+  const migrationSample = sampleHeadTail(migrationFiles, { head: 6, tail: 6 });
 
   return {
     infraPath,
@@ -184,8 +187,10 @@ async function collectDatabaseSnapshot(
       migrationsPath,
       exists: migrationEntries.length > 0,
       namingPattern: 'V<version>__<description>.sql (Flyway versioned migrations)',
-      migrationFiles,
+      migrationFiles: migrationSample.sample,
       count: migrationFiles.length,
+      truncated: migrationSample.truncated,
+      sampleNote: 'If truncated: first 6 and last 6 files in Flyway order.',
     },
     conventions: {
       schemas: ['centera', 'audit'],
@@ -205,8 +210,8 @@ async function safeListDirEntries(
     .listDir(repoPath)
     .then(({ entries }) => entries)
     .catch((err) => {
-      if (!allowMissing) warnings.push(`Unable to list directory: ${repoPath}`);
-      else warnings.push(`Unable to list optional directory: ${repoPath}`);
+      if (allowMissing && isNotFoundError(err)) return null;
+      warnings.push(`Unable to list directory: ${repoPath}`);
       void err;
       return null;
     });
@@ -218,17 +223,30 @@ async function safeReadFileText(
   client: ReturnType<typeof createGitHubRepoClient>,
   repoPath: string,
   warnings: string[],
+  opts?: { allowMissing?: boolean },
 ): Promise<{ exists: boolean; text: string }> {
+  const allowMissing = Boolean(opts?.allowMissing);
   const res = await client
     .readFile(repoPath, { maxBytes: 200_000 })
     .then((file) => ({ exists: true, text: file.text }))
     .catch((err) => {
+      if (allowMissing && isNotFoundError(err)) return { exists: false, text: '' };
       warnings.push(`Unable to read file: ${repoPath}`);
       void err;
       return { exists: false, text: '' };
     });
 
   return res;
+}
+
+function isNotFoundError(err: unknown): boolean {
+  const msg = toErrorMessage(err);
+  return msg.includes('GitHub API error 404');
+}
+
+function toErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return String(err);
 }
 
 function parseDotEnvKeyValues(text: string): Record<string, string> {
@@ -393,4 +411,13 @@ function compareFlywayVersions(a: number[], b: number[]): number {
     if (ai !== bi) return ai - bi;
   }
   return 0;
+}
+
+function sampleHeadTail<T>(items: T[], opts: { head: number; tail: number }): { sample: T[]; truncated: boolean } {
+  const head = Math.max(0, Math.trunc(opts.head));
+  const tail = Math.max(0, Math.trunc(opts.tail));
+  const limit = head + tail;
+
+  if (items.length <= limit) return { sample: items, truncated: false };
+  return { sample: [...items.slice(0, head), ...items.slice(-tail)], truncated: true };
 }

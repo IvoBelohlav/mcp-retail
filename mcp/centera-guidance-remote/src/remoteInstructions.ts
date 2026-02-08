@@ -36,10 +36,15 @@ export type EffectiveInstructions = {
   target: { path: string; kind: 'file' | 'dir' | 'unknown'; directory: string };
   includeReadme: boolean;
   mode: EffectiveInstructionsMode;
+  // Authoritative instruction files only (AGENTS.md, CLAUDE.md). README.md is treated as non-authoritative reference.
   filesUsed: InstructionFile[];
+  // Non-authoritative reference files (README.md) discovered along the directory chain.
+  referenceFilesUsed: InstructionFile[];
   truncated: boolean;
   mergedMarkdown?: string;
   summary?: string;
+  referenceMarkdown?: string;
+  referenceSummary?: string;
   note?: string;
 };
 
@@ -143,11 +148,11 @@ async function computeEffectiveInstructionsImpl(opts: {
 
   const dirChain = buildDirChain(directory);
   const byDir = groupByDirectory(opts.discovery.instructionFiles);
-  const filesUsed: InstructionFile[] = [];
+  const filesUsedAll: InstructionFile[] = [];
   for (const dir of dirChain) {
     const items = byDir.get(dir);
     if (!items || items.length === 0) continue;
-    filesUsed.push(...items);
+    filesUsedAll.push(...items);
   }
 
   const mode = opts.mode;
@@ -157,17 +162,22 @@ async function computeEffectiveInstructionsImpl(opts: {
   let anyTruncated = opts.discovery.truncated;
   let mergedMarkdown: string | undefined;
   let summary: string | undefined;
+  let referenceMarkdown: string | undefined;
+  let referenceSummary: string | undefined;
 
-  const fileTexts: Array<{ file: InstructionFile; text: string }> = [];
+  const filesUsed = filesUsedAll.filter((f) => f.kind !== 'readme');
+  const referenceFilesUsed = filesUsedAll.filter((f) => f.kind === 'readme');
+
+  const authoritativeTexts: Array<{ file: InstructionFile; text: string }> = [];
   for (const f of filesUsed) {
     try {
       const res = await opts.readFile(f.repoPath);
       if (res.truncated) anyTruncated = true;
-      fileTexts.push({ file: f, text: res.text });
+      authoritativeTexts.push({ file: f, text: res.text });
     } catch (err) {
       // Missing/unreadable instruction files should not hard-fail; return what we can.
       anyTruncated = true;
-      fileTexts.push({
+      authoritativeTexts.push({
         file: f,
         text: `<!-- Unable to read ${f.repoPath}: ${toErrorMessage(err)} -->\n`,
       });
@@ -175,25 +185,50 @@ async function computeEffectiveInstructionsImpl(opts: {
   }
 
   if (mode === 'full' || mode === 'both') {
-    mergedMarkdown = renderMergedMarkdown(normalizedTarget, fileTexts);
+    mergedMarkdown = renderMergedMarkdown(normalizedTarget, authoritativeTexts);
   }
 
   if (mode === 'summary' || mode === 'both') {
-    summary = renderSummary(fileTexts, { maxLines: maxSummaryLines });
+    summary = renderSummary(authoritativeTexts, { maxLines: maxSummaryLines });
+  }
+
+  if ((mode === 'full' || mode === 'both') && includeReadme && referenceFilesUsed.length > 0) {
+    const referenceTexts: Array<{ file: InstructionFile; text: string }> = [];
+    for (const f of referenceFilesUsed) {
+      try {
+        const res = await opts.readFile(f.repoPath);
+        if (res.truncated) anyTruncated = true;
+        referenceTexts.push({ file: f, text: res.text });
+      } catch (err) {
+        anyTruncated = true;
+        referenceTexts.push({
+          file: f,
+          text: `<!-- Unable to read ${f.repoPath}: ${toErrorMessage(err)} -->\n`,
+        });
+      }
+    }
+    referenceMarkdown = renderReferenceMarkdown(normalizedTarget, referenceTexts);
+    if (mode === 'both') referenceSummary = renderSummary(referenceTexts, { maxLines: maxSummaryLines });
   }
 
   const noteParts: string[] = [];
   if (!exists) noteParts.push('Target path does not exist on this ref; instructions were resolved by directory heuristics.');
   if (opts.discovery.note) noteParts.push(opts.discovery.note);
+  if (includeReadme && referenceFilesUsed.length > 0) {
+    noteParts.push('README.md files are included as non-authoritative reference only (not part of the instruction chain).');
+  }
 
   return {
     target: { path: normalizedTarget, kind, directory },
     includeReadme,
     mode,
     filesUsed,
+    referenceFilesUsed,
     truncated: anyTruncated,
     mergedMarkdown,
     summary,
+    referenceMarkdown,
+    referenceSummary,
     note: noteParts.length ? noteParts.join(' ') : undefined,
   };
 }
@@ -295,7 +330,23 @@ function renderMergedMarkdown(targetPath: string, fileTexts: Array<{ file: Instr
   return [
     `# Effective Instructions: ${targetPath}`,
     '',
-    'Precedence: files are applied from top to bottom. If instructions conflict, the deeper (later) file wins; otherwise rules are additive.',
+    'Authoritative precedence: files are applied from top to bottom. If instructions conflict, the deeper (later) file wins; otherwise rules are additive.',
+    'README.md files are not treated as authoritative instructions. If included, they appear separately as reference.',
+    '',
+    ...sections,
+  ].join('\n');
+}
+
+function renderReferenceMarkdown(targetPath: string, fileTexts: Array<{ file: InstructionFile; text: string }>): string {
+  const sections = fileTexts.map(({ file, text }, i) => {
+    const title = `${i + 1}. ${file.repoPath}`;
+    return `## ${title}\n\n${text.trim()}\n`;
+  });
+
+  return [
+    `# Reference Docs: ${targetPath}`,
+    '',
+    'These README.md files were discovered along the directory chain. They are non-authoritative reference only.',
     '',
     ...sections,
   ].join('\n');

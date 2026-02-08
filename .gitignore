@@ -12,6 +12,9 @@ coverage/
 # Logs
 *.log
 
+# TypeScript incremental build info
+*.tsbuildinfo
+
 # Env files
 .env
 .env.*
@@ -26,4 +29,3 @@ coverage/
 
 # Packaging
 *.tgz
-

@@ -116,6 +116,7 @@ test('computeEffectiveInstructions: CLAUDE > AGENTS > README precedence within t
 
   assert.deepEqual(
     effective.filesUsed.map((f) => f.repoPath),
-    ['README.md', 'AGENTS.md', 'CLAUDE.md', 'frontend/README.md', 'frontend/AGENTS.md'],
+    ['AGENTS.md', 'CLAUDE.md', 'frontend/AGENTS.md'],
   );
+  assert.deepEqual(effective.referenceFilesUsed.map((f) => f.repoPath), ['README.md', 'frontend/README.md']);
 });
